@@ -73,11 +73,12 @@ for i, record in enumerate(SeqIO.parse(args.input, "fasta")):
         if args.save_distance_array:
             np.save("{}/{}_distances.npy".format(dist_dir, id), wild_type_distance_map)
 
+    aa_list = list("ACDEFGHIKLMNPQRSTVWY")
+    mutation_matrix = np.ones((20, length))
+ 
     # Mutation predictions
     if args.test_sites is None:
         # Run original approach (testing all possible substitutions if test_sites file not specified).
-        aa_list = list("ACDEFGHIKLMNPQRSTVWY")
-        mutation_matrix = np.ones((20, length))
         mutation_log = os.path.join(sample_dir, id + "_mutation_log.txt")
         total = length * 19
         counter = 0
@@ -118,7 +119,6 @@ for i, record in enumerate(SeqIO.parse(args.input, "fasta")):
 
     else:
         # If test_sites files specified, then restrict analysis to those loci and changes.
-
         # Read in substitutions to test.
         total = 0
         subs_to_test = {}
@@ -128,8 +128,7 @@ for i, record in enumerate(SeqIO.parse(args.input, "fasta")):
                 subs_to_test[int(test_site_line[0])] = set(test_site_line[1].split(','))
                 total += len(subs_to_test[int(test_site_line[0])])
 
-        possible_aa = set(list('ACDEFGHIKLMNPQRSTVWY'))
-        mutation_matrix = np.ones((20, length))
+        possible_aa = set(aa_list)
         mutation_log = os.path.join(sample_dir, id + "_mutation_log.txt")
         counter = 0
         printProgressBar(0, total, prefix='Mutants:', suffix='Complete', length=50)
