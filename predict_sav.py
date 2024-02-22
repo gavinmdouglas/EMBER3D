@@ -20,11 +20,11 @@ parser.add_argument('-m', '--model', default="model/EMBER3D.model", dest='model_
 parser.add_argument('--t5-dir', dest='t5_dir', default="./ProtT5-XL-U50/", type=str)
 
 parser.add_argument('--test-sites', dest='test_sites', default=None, type=str,
-                    help='Optional input table specifying which amino acid positions '
+                    help='Optional path to folder containing input tables specifying which amino acid positions '
                     'to mutate, and which substitutions to make. '
-                    'Table should not have a header, and should be tab-delimited with two columns. '
-                    'The first column should be the AA position number (starting at 1, although not all positions need be present). '
-                    'The second column must be comma-delimited single-letter amino acid codes to test for substitutions at that position.')
+                    'There should be one table per input gene (named \"GENEID.tsv\"). '
+                    'Each table not have a header, and should be tab-delimited with these two columns: '
+                    '(1) 1-based AA position in protein, and (2) comma-delimited of (one-letter) AA substitutons to test.')
 
 args = parser.parse_args()
 
@@ -75,7 +75,7 @@ for i, record in enumerate(SeqIO.parse(args.input, "fasta")):
 
     aa_list = list("ACDEFGHIKLMNPQRSTVWY")
     mutation_matrix = np.ones((20, length))
- 
+
     # Mutation predictions
     if args.test_sites is None:
         # Run original approach (testing all possible substitutions if test_sites file not specified).
@@ -122,7 +122,9 @@ for i, record in enumerate(SeqIO.parse(args.input, "fasta")):
         # Read in substitutions to test.
         total = 0
         subs_to_test = {}
-        with open(args.test_sites, 'r') as test_sites_in:
+        exp_aa = {}
+        test_sites_file = args.test_sites + '/' + id + '.tsv'
+        with open(test_sites_file, 'r') as test_sites_in:
             for test_site_line in test_sites_in:
                 test_site_line = test_site_line.rstrip().split('\t')
                 subs_to_test[int(test_site_line[0])] = set(test_site_line[1].split(','))
